@@ -1,0 +1,24 @@
+{
+  "name": "@hotel/web",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "typecheck": "nuxt typecheck",
+    "lint": "echo \"No lint configured yet\""
+  },
+  "dependencies": {
+    "@nuxtjs/i18n": "^8.3.1",
+    "nuxt": "^3.11.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.14",
+    "typescript": "^5.5.4"
+  }
+}

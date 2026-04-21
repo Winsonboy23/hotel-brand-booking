@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "title": "nanasen | Nana Sen Kappo",
+    "description": "nanasen clone page built with Nuxt, Vue and Tailwind."
+  },
+  "nav": {
+    "top": "TOP",
+    "greeting": "GREETING",
+    "menu": "MENU",
+    "gallery": "GALLERY",
+    "access": "ACCESS",
+    "reservation": "RESERVATION"
+  },
+  "greeting": {
+    "l1": "Turn precious time into exceptional time.",
+    "l2": "In a calm space wrapped in warm wood,",
+    "l3": "we serve the blessings of each season one piece at a time.",
+    "l4": "With the finest ingredients of the day,",
+    "l5": "enjoy craftsmanship at your own pace."
+  },
+  "section": {
+    "menu": "MENU",
+    "info": "INFORMATION",
+    "location": "LOCATION"
+  },
+  "menu": {
+    "c1n": "Chef's Omakase",
+    "c1d": "Our signature course with seasonal sushi and specialties.",
+    "c2n": "Seasonal Premium Course",
+    "c2d": "A special menu focused on the best ingredients of the day.",
+    "c3n": "Pairing",
+    "c3d": "Sake and wine pairings tailored to each dish."
+  },
+  "brandMenu": {
+    "nanasen": {
+      "note": "(Available at lunch and dinner. A 10% service charge applies.)",
+      "courses": [
+        { "sectionKey": "omakase", "section": "OMAKASE", "name": "Omakase", "price": "2500", "desc": "Items and pricing vary based on daily ingredients." },
+        { "sectionKey": "alcohol", "section": "ALCOHOLIC DRINK", "name": "Kirin Draft Beer", "price": "100", "desc": "Alcoholic beverage" },
+        { "sectionKey": "alcohol", "section": "ALCOHOLIC DRINK", "name": "Umeshu", "price": "300", "desc": "Alcoholic beverage" },
+        { "sectionKey": "alcohol", "section": "ALCOHOLIC DRINK", "name": "Yuzu Liqueur", "price": "300", "desc": "Alcoholic beverage" },
+        { "sectionKey": "alcohol", "section": "ALCOHOLIC DRINK", "name": "Mikan Liqueur", "price": "300", "desc": "Alcoholic beverage" },
+        { "sectionKey": "alcohol", "section": "ALCOHOLIC DRINK", "name": "Peach Liqueur", "price": "300", "desc": "Alcoholic beverage" },
+        { "sectionKey": "alcohol", "section": "ALCOHOLIC DRINK", "name": "Whisky", "price": "Market Price", "desc": "Alcoholic beverage" },
+        { "sectionKey": "alcohol", "section": "ALCOHOLIC DRINK", "name": "Sake", "price": "Market Price", "desc": "Alcoholic beverage" },
+        { "sectionKey": "soft", "section": "SOFT DRINK", "name": "Cola", "price": "50", "desc": "Soft drink" },
+        { "sectionKey": "soft", "section": "SOFT DRINK", "name": "Apple Soda", "price": "50", "desc": "Soft drink" },
+        { "sectionKey": "soft", "section": "SOFT DRINK", "name": "Calpis", "price": "50", "desc": "Soft drink" },
+        { "sectionKey": "soft", "section": "SOFT DRINK", "name": "Minute Maid", "price": "50", "desc": "Soft drink" },
+        { "sectionKey": "soft", "section": "SOFT DRINK", "name": "Oolong Tea", "price": "50", "desc": "Soft drink" },
+        { "sectionKey": "lunch", "section": "LUNCH MENU", "name": "Grilled Fish Set", "price": "380", "desc": "Appetizer, chawanmushi, grilled fish, rice, soup, dessert (lunch only)" },
+        { "sectionKey": "lunch", "section": "LUNCH MENU", "name": "Chirashi Sushi Set", "price": "480", "desc": "Appetizer, chawanmushi, chirashi sushi, 4 pieces nigiri, soup, dessert (lunch only)" },
+        { "sectionKey": "lunch", "section": "LUNCH MENU", "name": "Eel Rice Set", "price": "520", "desc": "Appetizer, chawanmushi, grilled eel rice, soup, dessert (lunch only)" },
+        { "sectionKey": "lunch", "section": "LUNCH MENU", "name": "Nigiri Sushi Set (8 pcs)", "price": "480", "desc": "Appetizer, chawanmushi, 8 pieces nigiri, soup, dessert (lunch only)" },
+        { "sectionKey": "lunch", "section": "LUNCH MENU", "name": "Nigiri Sushi Set (10 pcs)", "price": "580", "desc": "Appetizer, chawanmushi, 10 pieces nigiri, soup, dessert (lunch only)" }
+      ]
+    },
+    "quexi": {
+      "courses": [
+        { "section": "SIGNATURE", "name": "Rich Seafood Ramen", "price": "NT$240", "desc": "Taiwan salt / Japan salt" },
+        { "section": "SIGNATURE", "name": "Rich Seafood Tsukemen", "price": "NT$250", "desc": "125g / 250g" },
+        { "section": "SIGNATURE", "name": "Bonito & Shellfish Dashi Ramen", "price": "NT$210", "desc": "Taiwan salt / Japan salt" },
+        { "section": "SIGNATURE", "name": "Soy Sauce Bonito & Shellfish Clear Ramen", "price": "NT$220", "desc": "Taiwan salt / Japan salt" },
+        { "section": "SIGNATURE", "name": "Vegetable Beef Tsukemen", "price": "NT$280", "desc": "125g / 250g" },
+        { "section": "SIGNATURE", "name": "Hatcho Miso Tsukemen", "price": "NT$260", "desc": "125g / 250g" },
+        { "section": "ADD-ON", "name": "Green Onion", "price": "NT$20", "desc": "" },
+        { "section": "ADD-ON", "name": "White Scallion", "price": "NT$20", "desc": "" },
+        { "section": "ADD-ON", "name": "Bamboo Shoots", "price": "NT$20", "desc": "" },
+        { "section": "ADD-ON", "name": "Rice", "price": "NT$20", "desc": "" },
+        { "section": "ADD-ON", "name": "Thin Noodles", "price": "NT$30", "desc": "" },
+        { "section": "ADD-ON", "name": "Thick Noodles", "price": "NT$30", "desc": "" },
+        { "section": "ADD-ON", "name": "Ajitama Egg", "price": "NT$30", "desc": "" },
+        { "section": "ADD-ON", "name": "Chicken Chashu", "price": "NT$30", "desc": "" },
+        { "section": "ADD-ON", "name": "Pork Belly Chashu", "price": "NT$40", "desc": "" },
+        { "section": "ADD-ON", "name": "Pork Shoulder Chashu", "price": "NT$40", "desc": "" },
+        { "section": "ADD-ON", "name": "Shrimp Wonton x4", "price": "NT$60", "desc": "" },
+        { "section": "ADD-ON", "name": "Meat Platter", "price": "NT$100", "desc": "" },
+        { "section": "DRINK", "name": "Cola", "price": "NT$30", "desc": "" },
+        { "section": "DRINK", "name": "Strong Green Tea", "price": "NT$50", "desc": "" },
+        { "section": "DRINK", "name": "Beer", "price": "NT$60", "desc": "" }
+      ]
+    }
+  },
+  "info": {
+    "clientLabel": "Client",
+    "clientValue": "nanasen",
+    "nameLabel": "Name",
+    "nameValue": "Nana Sen Kappo",
+    "handleLabel": "Instagram",
+    "handleValue": "@nana_sen7",
+    "followersLabel": "Followers",
+    "followersValue": "1,879",
+    "followingLabel": "Following",
+    "followingValue": "7",
+    "postsLabel": "Posts",
+    "postsValue": "155",
+    "linkLabel": "Profile URL",
+    "linkValue": "https://www.instagram.com/nana_sen7/"
+  },
+  "action": {
+    "map": "View Map",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "prev": "Previous",
+    "next": "Next",
+    "reserve": "Reservation"
+  },
+  "footer": {
+    "address": "@nana_sen7 / Nana Sen Kappo"
+  }
+}

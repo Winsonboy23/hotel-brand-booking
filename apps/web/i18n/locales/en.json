@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "title": "nanasen | Nana Sen Kappo",
+    "description": "nanasen clone page built with Nuxt, Vue and Tailwind."
+  },
+  "nav": {
+    "top": "TOP",
+    "greeting": "GREETING",
+    "menu": "MENU",
+    "access": "ACCESS",
+    "reservation": "RESERVATION"
+  },
+  "greeting": {
+    "l1": "Turn precious time into exceptional time.",
+    "l2": "In a calm space wrapped in warm wood,",
+    "l3": "we serve the blessings of each season one piece at a time.",
+    "l4": "With the finest ingredients of the day,",
+    "l5": "enjoy craftsmanship at your own pace."
+  },
+  "section": {
+    "menu": "MENU",
+    "info": "INFORMATION"
+  },
+  "menu": {
+    "c1n": "Chef's Omakase",
+    "c1d": "Our signature course with seasonal sushi and specialties.",
+    "c2n": "Seasonal Premium Course",
+    "c2d": "A special menu focused on the best ingredients of the day.",
+    "c3n": "Pairing",
+    "c3d": "Sake and wine pairings tailored to each dish."
+  },
+  "info": {
+    "clientLabel": "Client",
+    "clientValue": "nanasen",
+    "nameLabel": "Name",
+    "nameValue": "Nana Sen Kappo",
+    "handleLabel": "Instagram",
+    "handleValue": "@nana_sen7",
+    "followersLabel": "Followers",
+    "followersValue": "1,879",
+    "followingLabel": "Following",
+    "followingValue": "7",
+    "postsLabel": "Posts",
+    "postsValue": "155",
+    "linkLabel": "Profile URL",
+    "linkValue": "https://www.instagram.com/nana_sen7/"
+  },
+  "action": {
+    "map": "View Map",
+    "instagram": "Instagram",
+    "reserve": "Reservation"
+  },
+  "footer": {
+    "address": "@nana_sen7 / Nana Sen Kappo"
+  }
+}

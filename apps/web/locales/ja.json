@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "title": "nanasen | 七撰 割烹",
+    "description": "Nuxt / Vue / Tailwind で再現した nanasen のクローンページ。"
+  },
+  "nav": {
+    "top": "TOP",
+    "greeting": "ご挨拶",
+    "menu": "メニュー",
+    "gallery": "ギャラリー",
+    "access": "アクセス",
+    "reservation": "ご予約"
+  },
+  "greeting": {
+    "l1": "大切な時間を、特別な時間へ。",
+    "l2": "木の温もりと静けさに包まれた空間で、",
+    "l3": "季節の恵みを、一貫ずつ丁寧にお届けします。",
+    "l4": "その日の一番良い素材と、",
+    "l5": "職人の仕事を心ゆくまでご堪能ください。"
+  },
+  "section": {
+    "menu": "MENU",
+    "info": "INFORMATION",
+    "location": "所在地"
+  },
+  "menu": {
+    "c1n": "おまかせコース",
+    "c1d": "旬の握りと逸品を織り交ぜた定番コース",
+    "c2n": "季節の特選コース",
+    "c2d": "その日の最上食材を中心に構成する特別献立",
+    "c3n": "ペアリング",
+    "c3d": "日本酒・ワインを中心に料理に合わせてご提案"
+  },
+  "brandMenu": {
+    "nanasen": {
+      "note": "（ランチ・ディナーともにご提供。別途サービス料10%を頂戴します。）",
+      "courses": [
+        { "sectionKey": "omakase", "section": "おまかせ", "name": "おまかせ", "price": "2500", "desc": "内容・価格は当日の食材により変動します" },
+        { "sectionKey": "alcohol", "section": "アルコールドリンク", "name": "キリン生ビール", "price": "100", "desc": "アルコール" },
+        { "sectionKey": "alcohol", "section": "アルコールドリンク", "name": "梅酒", "price": "300", "desc": "アルコール" },
+        { "sectionKey": "alcohol", "section": "アルコールドリンク", "name": "柚子酒", "price": "300", "desc": "アルコール" },
+        { "sectionKey": "alcohol", "section": "アルコールドリンク", "name": "みかん酒", "price": "300", "desc": "アルコール" },
+        { "sectionKey": "alcohol", "section": "アルコールドリンク", "name": "桃酒", "price": "300", "desc": "アルコール" },
+        { "sectionKey": "alcohol", "section": "アルコールドリンク", "name": "ウイスキー", "price": "時価", "desc": "アルコール" },
+        { "sectionKey": "alcohol", "section": "アルコールドリンク", "name": "日本酒", "price": "時価", "desc": "アルコール" },
+        { "sectionKey": "soft", "section": "ソフトドリンク", "name": "コーラ", "price": "50", "desc": "ソフトドリンク" },
+        { "sectionKey": "soft", "section": "ソフトドリンク", "name": "アップルサイダー", "price": "50", "desc": "ソフトドリンク" },
+        { "sectionKey": "soft", "section": "ソフトドリンク", "name": "カルピス", "price": "50", "desc": "ソフトドリンク" },
+        { "sectionKey": "soft", "section": "ソフトドリンク", "name": "ミニッツメイド", "price": "50", "desc": "ソフトドリンク" },
+        { "sectionKey": "soft", "section": "ソフトドリンク", "name": "烏龍茶", "price": "50", "desc": "ソフトドリンク" },
+        { "sectionKey": "lunch", "section": "ランチメニュー", "name": "焼き魚定食", "price": "380", "desc": "前菜、茶碗蒸し、焼き魚、ご飯、汁物、デザート（ランチ限定）" },
+        { "sectionKey": "lunch", "section": "ランチメニュー", "name": "ちらし寿司定食", "price": "480", "desc": "前菜、茶碗蒸し、ちらし寿司、握り4貫、汁物、デザート（ランチ限定）" },
+        { "sectionKey": "lunch", "section": "ランチメニュー", "name": "うなぎ飯定食", "price": "520", "desc": "前菜、茶碗蒸し、うなぎ飯、汁物、デザート（ランチ限定）" },
+        { "sectionKey": "lunch", "section": "ランチメニュー", "name": "握り寿司定食（8貫）", "price": "480", "desc": "前菜、茶碗蒸し、握り8貫、汁物、デザート（ランチ限定）" },
+        { "sectionKey": "lunch", "section": "ランチメニュー", "name": "握り寿司定食（10貫）", "price": "580", "desc": "前菜、茶碗蒸し、握り10貫、汁物、デザート（ランチ限定）" }
+      ]
+    },
+    "quexi": {
+      "courses": [
+        { "section": "定番", "name": "濃厚魚介ラーメン", "price": "240 元", "desc": "台湾塩 / 日本塩" },
+        { "section": "定番", "name": "濃厚魚介つけ麺", "price": "250 元", "desc": "125g / 250g" },
+        { "section": "定番", "name": "鰹貝出汁ラーメン", "price": "210 元", "desc": "台湾塩 / 日本塩" },
+        { "section": "定番", "name": "醤油鰹貝清湯ラーメン", "price": "220 元", "desc": "台湾塩 / 日本塩" },
+        { "section": "定番", "name": "野菜牛味つけ麺", "price": "280 元", "desc": "125g / 250g" },
+        { "section": "定番", "name": "八丁味噌つけ麺", "price": "260 元", "desc": "125g / 250g" },
+        { "section": "トッピング", "name": "青ねぎ", "price": "20 元", "desc": "" },
+        { "section": "トッピング", "name": "白ねぎ", "price": "20 元", "desc": "" },
+        { "section": "トッピング", "name": "メンマ", "price": "20 元", "desc": "" },
+        { "section": "トッピング", "name": "ご飯", "price": "20 元", "desc": "" },
+        { "section": "トッピング", "name": "細麺", "price": "30 元", "desc": "" },
+        { "section": "トッピング", "name": "太麺", "price": "30 元", "desc": "" },
+        { "section": "トッピング", "name": "味玉", "price": "30 元", "desc": "" },
+        { "section": "トッピング", "name": "鶏チャーシュー", "price": "30 元", "desc": "" },
+        { "section": "トッピング", "name": "豚バラチャーシュー", "price": "40 元", "desc": "" },
+        { "section": "トッピング", "name": "肩ロースチャーシュー", "price": "40 元", "desc": "" },
+        { "section": "トッピング", "name": "海老ワンタン x4", "price": "60 元", "desc": "" },
+        { "section": "トッピング", "name": "肉盛り", "price": "100 元", "desc": "" },
+        { "section": "ドリンク", "name": "コーラ", "price": "30 元", "desc": "" },
+        { "section": "ドリンク", "name": "濃い緑茶", "price": "50 元", "desc": "" },
+        { "section": "ドリンク", "name": "ビール", "price": "60 元", "desc": "" }
+      ]
+    }
+  },
+  "info": {
+    "clientLabel": "クライアント",
+    "clientValue": "nanasen",
+    "nameLabel": "店名",
+    "nameValue": "七撰 割烹",
+    "handleLabel": "Instagram",
+    "handleValue": "@nana_sen7",
+    "followersLabel": "フォロワー",
+    "followersValue": "1,879",
+    "followingLabel": "フォロー中",
+    "followingValue": "7",
+    "postsLabel": "投稿",
+    "postsValue": "155",
+    "linkLabel": "プロフィールURL",
+    "linkValue": "https://www.instagram.com/nana_sen7/"
+  },
+  "action": {
+    "map": "地図を見る",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "prev": "前へ",
+    "next": "次へ",
+    "reserve": "ご予約"
+  },
+  "footer": {
+    "address": "@nana_sen7 / 七撰 割烹"
+  }
+}

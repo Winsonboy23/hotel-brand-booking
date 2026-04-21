@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "title": "nanasen | 七撰 割烹",
+    "description": "使用 Nuxt、Vue、Tailwind 製作的 nanasen clone 頁面。"
+  },
+  "nav": {
+    "top": "首頁",
+    "greeting": "問候",
+    "menu": "菜單",
+    "gallery": "相簿",
+    "access": "位置",
+    "reservation": "預約"
+  },
+  "greeting": {
+    "l1": "把珍貴時光，化為難忘時刻。",
+    "l2": "在木質溫潤與寧靜包圍的空間裡，",
+    "l3": "將四季旬味，一貫一貫細緻呈現。",
+    "l4": "以當日最好的食材，",
+    "l5": "邀您細細品味職人的手藝。"
+  },
+  "section": {
+    "menu": "菜單",
+    "info": "店鋪資訊",
+    "location": "位置"
+  },
+  "menu": {
+    "c1n": "主廚無菜單套餐",
+    "c1d": "以當季握壽司與旬味料理構成的經典套餐。",
+    "c2n": "季節特選套餐",
+    "c2d": "以當日頂級食材為核心的特別菜單。",
+    "c3n": "搭餐酒",
+    "c3d": "依照料理提供清酒與葡萄酒搭配建議。"
+  },
+  "brandMenu": {
+    "nanasen": {
+      "note": "（午／晚時段皆供應，需另收 10%服務費）",
+      "courses": [
+        { "sectionKey": "omakase", "section": "無菜單", "name": "おまかせ", "price": "2500", "desc": "品項、價格依當天食材而定" },
+        { "sectionKey": "alcohol", "section": "酒精飲品", "name": "麒麟生啤", "price": "100", "desc": "酒類" },
+        { "sectionKey": "alcohol", "section": "酒精飲品", "name": "梅酒", "price": "300", "desc": "酒類" },
+        { "sectionKey": "alcohol", "section": "酒精飲品", "name": "柚子酒", "price": "300", "desc": "酒類" },
+        { "sectionKey": "alcohol", "section": "酒精飲品", "name": "蜜柑酒", "price": "300", "desc": "酒類" },
+        { "sectionKey": "alcohol", "section": "酒精飲品", "name": "蜜桃酒", "price": "300", "desc": "酒類" },
+        { "sectionKey": "alcohol", "section": "酒精飲品", "name": "威士忌", "price": "時價", "desc": "酒類" },
+        { "sectionKey": "alcohol", "section": "酒精飲品", "name": "清酒", "price": "時價", "desc": "酒類" },
+        { "sectionKey": "soft", "section": "無酒精飲品", "name": "可樂", "price": "50", "desc": "軟性飲品" },
+        { "sectionKey": "soft", "section": "無酒精飲品", "name": "蘋果西打", "price": "50", "desc": "軟性飲品" },
+        { "sectionKey": "soft", "section": "無酒精飲品", "name": "可爾必思", "price": "50", "desc": "軟性飲品" },
+        { "sectionKey": "soft", "section": "無酒精飲品", "name": "美粒果", "price": "50", "desc": "軟性飲品" },
+        { "sectionKey": "soft", "section": "無酒精飲品", "name": "烏龍茶", "price": "50", "desc": "軟性飲品" },
+        { "sectionKey": "lunch", "section": "午間套餐", "name": "烤魚定食", "price": "380", "desc": "前菜、茶碗蒸、烤魚、白飯、湯、甜點（僅中午時段供應）" },
+        { "sectionKey": "lunch", "section": "午間套餐", "name": "散壽司定食", "price": "480", "desc": "前菜、茶碗蒸、散壽司、壽司 4 貫、湯、甜點（僅中午時段供應）" },
+        { "sectionKey": "lunch", "section": "午間套餐", "name": "鰻魚飯定食", "price": "520", "desc": "前菜、茶碗蒸、鰻魚飯（白鰻）、湯、甜點（僅中午時段供應）" },
+        { "sectionKey": "lunch", "section": "午間套餐", "name": "握壽司定食（8 貫）", "price": "480", "desc": "前菜、茶碗蒸、壽司 8 貫、湯、甜點（僅中午時段供應）" },
+        { "sectionKey": "lunch", "section": "午間套餐", "name": "握壽司定食（10 貫）", "price": "580", "desc": "前菜、茶碗蒸、壽司 10 貫、湯、甜點（僅中午時段供應）" }
+      ]
+    },
+    "quexi": {
+      "courses": [
+        { "section": "定番", "name": "濃厚魚介拉麵", "price": "240 元", "desc": "台灣鹹 / 日本鹹" },
+        { "section": "定番", "name": "濃厚魚介沾麵", "price": "250 元", "desc": "125g / 250g" },
+        { "section": "定番", "name": "鰹魚貝出汁拉麵", "price": "210 元", "desc": "台灣鹹 / 日本鹹" },
+        { "section": "定番", "name": "醬油鰹魚貝清湯拉麵", "price": "220 元", "desc": "台灣鹹 / 日本鹹" },
+        { "section": "定番", "name": "野菜牛味沾麵", "price": "280 元", "desc": "125g / 250g" },
+        { "section": "定番", "name": "八丁味噌沾麵", "price": "260 元", "desc": "125g / 250g" },
+        { "section": "單點", "name": "青蔥", "price": "20 元", "desc": "" },
+        { "section": "單點", "name": "蔥白", "price": "20 元", "desc": "" },
+        { "section": "單點", "name": "筍干", "price": "20 元", "desc": "" },
+        { "section": "單點", "name": "白飯", "price": "20 元", "desc": "" },
+        { "section": "單點", "name": "細麵", "price": "30 元", "desc": "" },
+        { "section": "單點", "name": "粗麵", "price": "30 元", "desc": "" },
+        { "section": "單點", "name": "溏心蛋", "price": "30 元", "desc": "" },
+        { "section": "單點", "name": "雞叉燒", "price": "30 元", "desc": "" },
+        { "section": "單點", "name": "五花叉燒", "price": "40 元", "desc": "" },
+        { "section": "單點", "name": "梅花叉燒", "price": "40 元", "desc": "" },
+        { "section": "單點", "name": "蝦餛飩 x4", "price": "60 元", "desc": "" },
+        { "section": "單點", "name": "肉拚盤", "price": "100 元", "desc": "" },
+        { "section": "飲品", "name": "可樂", "price": "30 元", "desc": "" },
+        { "section": "飲品", "name": "綠茶一杯（濃茶）", "price": "50 元", "desc": "" },
+        { "section": "飲品", "name": "啤酒", "price": "60 元", "desc": "" }
+      ]
+    }
+  },
+  "info": {
+    "clientLabel": "客戶名稱",
+    "clientValue": "nanasen",
+    "nameLabel": "店名",
+    "nameValue": "七撰 割烹",
+    "handleLabel": "Instagram",
+    "handleValue": "@nana_sen7",
+    "followersLabel": "追蹤者",
+    "followersValue": "1,879",
+    "followingLabel": "追蹤中",
+    "followingValue": "7",
+    "postsLabel": "貼文數",
+    "postsValue": "155",
+    "linkLabel": "個人頁連結",
+    "linkValue": "https://www.instagram.com/nana_sen7/"
+  },
+  "action": {
+    "map": "查看地圖",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "prev": "上一頁",
+    "next": "下一頁",
+    "reserve": "立即預約"
+  },
+  "footer": {
+    "address": "@nana_sen7 / 七撰 割烹"
+  }
+}

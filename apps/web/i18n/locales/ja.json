@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "title": "nanasen | 七撰 割烹",
+    "description": "Nuxt / Vue / Tailwind で再現した nanasen のクローンページ。"
+  },
+  "nav": {
+    "top": "TOP",
+    "greeting": "ご挨拶",
+    "menu": "メニュー",
+    "access": "アクセス",
+    "reservation": "ご予約"
+  },
+  "greeting": {
+    "l1": "大切な時間を、特別な時間へ。",
+    "l2": "木の温もりと静けさに包まれた空間で、",
+    "l3": "季節の恵みを、一貫ずつ丁寧にお届けします。",
+    "l4": "その日の一番良い素材と、",
+    "l5": "職人の仕事を心ゆくまでご堪能ください。"
+  },
+  "section": {
+    "menu": "MENU",
+    "info": "INFORMATION"
+  },
+  "menu": {
+    "c1n": "おまかせコース",
+    "c1d": "旬の握りと逸品を織り交ぜた定番コース",
+    "c2n": "季節の特選コース",
+    "c2d": "その日の最上食材を中心に構成する特別献立",
+    "c3n": "ペアリング",
+    "c3d": "日本酒・ワインを中心に料理に合わせてご提案"
+  },
+  "info": {
+    "clientLabel": "クライアント",
+    "clientValue": "nanasen",
+    "nameLabel": "店名",
+    "nameValue": "七撰 割烹",
+    "handleLabel": "Instagram",
+    "handleValue": "@nana_sen7",
+    "followersLabel": "フォロワー",
+    "followersValue": "1,879",
+    "followingLabel": "フォロー中",
+    "followingValue": "7",
+    "postsLabel": "投稿",
+    "postsValue": "155",
+    "linkLabel": "プロフィールURL",
+    "linkValue": "https://www.instagram.com/nana_sen7/"
+  },
+  "action": {
+    "map": "地図を見る",
+    "instagram": "Instagram",
+    "reserve": "Reservation"
+  },
+  "footer": {
+    "address": "@nana_sen7 / 七撰 割烹"
+  }
+}
