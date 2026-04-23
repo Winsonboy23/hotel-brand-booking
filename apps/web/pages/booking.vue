@@ -1,13 +1,25 @@
 <script setup lang="ts">
-import { paymentMethods } from '~/data/hotel'
-
 const route = useRoute()
 const { formatTwd } = useCurrency()
 const { rooms } = useSiteContent()
+const config = useRuntimeConfig()
+const apiBaseUrl = config.public.apiBaseUrl as string
 
 const step = ref(1)
 const submitted = ref(false)
 const touched = ref(false)
+const submitting = ref(false)
+const submitError = ref('')
+const bookingNo = ref('')
+const lineBinding = reactive({
+  userId: '',
+  displayName: ''
+})
+
+const paymentMethodOptions = [
+  { value: 'bank_transfer', label: '銀行轉帳' },
+  { value: 'onsite_card_hold', label: '現場支付（保證卡）' }
+] as const
 
 const form = reactive({
   roomSlug: '',
@@ -17,8 +29,30 @@ const form = reactive({
   name: '',
   email: '',
   phone: '',
-  paymentMethod: paymentMethods[0],
+  paymentMethod: paymentMethodOptions[0].value,
   note: ''
+})
+
+const bindLineFromQuery = () => {
+  if (typeof route.query.line_user_id === 'string') {
+    lineBinding.userId = route.query.line_user_id
+    localStorage.setItem('line_user_id', route.query.line_user_id)
+  }
+  if (typeof route.query.line_display_name === 'string') {
+    lineBinding.displayName = route.query.line_display_name
+    localStorage.setItem('line_display_name', route.query.line_display_name)
+  }
+}
+
+onMounted(() => {
+  bindLineFromQuery()
+
+  if (!lineBinding.userId) {
+    lineBinding.userId = localStorage.getItem('line_user_id') ?? ''
+  }
+  if (!lineBinding.displayName) {
+    lineBinding.displayName = localStorage.getItem('line_display_name') ?? ''
+  }
 })
 
 if (typeof route.query.room === 'string') {
@@ -55,11 +89,14 @@ const errors = computed(() => ({
   name: form.name.trim().length < 2 ? '請輸入正確姓名' : '',
   email: !/^\S+@\S+\.\S+$/.test(form.email) ? 'Email 格式不正確' : '',
   phone: form.phone.trim().length < 8 ? '請輸入正確電話' : '',
-  paymentMethod: !form.paymentMethod ? '請選擇付款方式' : ''
+  paymentMethod: !form.paymentMethod ? '請選擇付款方式' : '',
+  lineUserId: !lineBinding.userId ? '請先完成 LINE 綁定' : ''
 }))
 
 const hasStepOneError = computed(() => Boolean(errors.value.checkIn || errors.value.checkOut || errors.value.guests))
-const hasStepTwoError = computed(() => Boolean(errors.value.name || errors.value.email || errors.value.phone || errors.value.paymentMethod))
+const hasStepTwoError = computed(
+  () => Boolean(errors.value.name || errors.value.email || errors.value.phone || errors.value.paymentMethod || errors.value.lineUserId)
+)
 
 const goNext = () => {
   touched.value = true
@@ -74,10 +111,52 @@ const goPrev = () => {
   touched.value = false
 }
 
-const submitBooking = () => {
+const startLineBinding = async () => {
+  const redirectUrl = new URL(`${window.location.origin}${route.path}`)
+  if (typeof route.query.room === 'string') {
+    redirectUrl.searchParams.set('room', route.query.room)
+  }
+
+  const response = await $fetch<{ url: string }>(`${apiBaseUrl}/api/auth/line/login-url`, {
+    query: { redirectUri: redirectUrl.toString() }
+  })
+
+  window.location.href = response.url
+}
+
+const submitBooking = async () => {
   touched.value = true
-  if (hasStepOneError.value || hasStepTwoError.value || nights.value <= 0) return
-  submitted.value = true
+  submitError.value = ''
+  if (hasStepOneError.value || hasStepTwoError.value || nights.value <= 0 || !selectedRoom.value) return
+
+  try {
+    submitting.value = true
+
+    const response = await $fetch<{ status: string; data: { bookingNo: string } }>(`${apiBaseUrl}/api/bookings`, {
+      method: 'POST',
+      body: {
+        roomSlug: selectedRoom.value.slug,
+        checkIn: form.checkIn,
+        checkOut: form.checkOut,
+        nights: nights.value,
+        guests: form.guests,
+        amount: subtotal.value,
+        guestName: form.name,
+        email: form.email,
+        phone: form.phone,
+        lineUserId: lineBinding.userId,
+        paymentMethod: form.paymentMethod,
+        remittanceNote: form.note
+      }
+    })
+
+    bookingNo.value = response.data.bookingNo
+    submitted.value = true
+  } catch (error: any) {
+    submitError.value = error?.data?.message ?? '送出失敗，請稍後再試'
+  } finally {
+    submitting.value = false
+  }
 }
 
 const isInvalid = (key: keyof typeof errors.value) => touched.value && Boolean(errors.value[key])
@@ -135,6 +214,18 @@ useHead({
         <template v-else-if="step === 2">
           <h2>Step 2｜填寫聯絡資料</h2>
           <div class="booking-grid">
+            <div class="booking-full booking-line-bind site-card">
+              <div>
+                <p class="booking-line-bind__title">LINE 綁定</p>
+                <p class="booking-line-bind__value" v-if="lineBinding.userId">
+                  已綁定：{{ lineBinding.displayName || lineBinding.userId }}
+                </p>
+                <p class="booking-line-bind__value" v-else>尚未綁定，需完成綁定後才能預約。</p>
+              </div>
+              <button type="button" class="site-btn" @click="startLineBinding">使用 LINE 綁定</button>
+            </div>
+            <p v-if="isInvalid('lineUserId')" class="form-error booking-full">{{ errors.lineUserId }}</p>
+
             <label class="form-field">
               姓名
               <input v-model="form.name" placeholder="請輸入姓名" :class="{ 'is-error': isInvalid('name') }">
@@ -156,14 +247,14 @@ useHead({
             <label class="form-field">
               付款方式
               <select v-model="form.paymentMethod" :class="{ 'is-error': isInvalid('paymentMethod') }">
-                <option v-for="method in paymentMethods" :key="method" :value="method">{{ method }}</option>
+                <option v-for="method in paymentMethodOptions" :key="method.value" :value="method.value">{{ method.label }}</option>
               </select>
               <span v-if="isInvalid('paymentMethod')" class="form-error">{{ errors.paymentMethod }}</span>
             </label>
 
             <label class="form-field booking-full">
-              備註
-              <textarea v-model="form.note" rows="4" placeholder="特殊需求可填寫於此" />
+              匯款備註
+              <textarea v-model="form.note" rows="4" placeholder="可填寫匯款末五碼、特殊需求等資訊" />
             </label>
           </div>
         </template>
@@ -171,10 +262,11 @@ useHead({
         <template v-else>
           <h2>Step 3｜確認內容</h2>
           <div class="booking-confirm">
+            <p>LINE：{{ lineBinding.displayName || lineBinding.userId || '未綁定' }}</p>
             <p>房型：{{ selectedRoom?.name }}</p>
             <p>日期：{{ form.checkIn || '—' }} 至 {{ form.checkOut || '—' }}</p>
             <p>入住人數：{{ form.guests }} 位</p>
-            <p>付款方式：{{ form.paymentMethod }}</p>
+            <p>付款方式：{{ paymentMethodOptions.find((x) => x.value === form.paymentMethod)?.label }}</p>
             <p>聯絡人：{{ form.name || '—' }} / {{ form.phone || '—' }}</p>
             <p>Email：{{ form.email || '—' }}</p>
             <p>備註：{{ form.note || '無' }}</p>
@@ -184,8 +276,10 @@ useHead({
         <div class="booking-actions">
           <button v-if="step > 1" type="button" class="site-btn site-btn--ghost" @click="goPrev">上一步</button>
           <button v-if="step < 3" type="button" class="site-btn" @click="goNext">下一步</button>
-          <button v-else type="submit" class="site-btn">確認送出</button>
+          <button v-else type="submit" class="site-btn" :disabled="submitting">{{ submitting ? '送出中...' : '確認送出' }}</button>
         </div>
+
+        <p v-if="submitError" class="form-error" style="margin-top: 0.75rem">{{ submitError }}</p>
       </form>
 
       <aside class="site-card booking-summary">
@@ -201,7 +295,8 @@ useHead({
       <article class="site-card booking-success__card">
         <p class="home-section__eyebrow">BOOKING COMPLETED</p>
         <h2>預約成功</h2>
-        <p>我們已收到你的預約需求，客服將於 30 分鐘內與你確認訂單。</p>
+        <p>訂單編號：{{ bookingNo }}</p>
+        <p>我們已收到你的預約需求，請依匯款指示完成付款，客服將協助後續確認。</p>
         <NuxtLink to="/" class="site-btn">返回首頁</NuxtLink>
       </article>
     </section>

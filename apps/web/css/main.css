@@ -664,6 +664,25 @@ h3 {
   grid-column: 1 / -1;
 }
 
+.booking-line-bind {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding: 0.9rem;
+  background: #fff8ed;
+}
+
+.booking-line-bind__title {
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.booking-line-bind__value {
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+}
+
 .booking-actions {
   margin-top: 1.2rem;
   display: flex;
@@ -721,6 +740,12 @@ h3 {
 
 .booking-success__card .site-btn {
   margin-top: 1rem;
+}
+
+.site-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .site-footer {

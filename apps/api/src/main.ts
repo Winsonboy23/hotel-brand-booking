@@ -22,6 +22,12 @@ const notionEnvSchema = z.object({
   NOTION_BOOKINGS_DB_ID: z.string().min(1)
 })
 
+const lineEnvSchema = z.object({
+  LINE_CHANNEL_ID: z.string().min(1),
+  LINE_CHANNEL_SECRET: z.string().min(1),
+  LINE_CALLBACK_URL: z.string().url()
+})
+
 const promotionSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
@@ -61,6 +67,9 @@ const notionRepository = notionConfig.success
       bookingsDbId: notionConfig.data.NOTION_BOOKINGS_DB_ID
     } satisfies NotionDatabaseIds)
   : null
+
+const lineConfig = lineEnvSchema.safeParse(process.env)
+const lineLoginStateStore = new Map<string, { redirectUri: string; createdAt: number }>()
 
 const seedPromotions: Promotion[] = [
   {
@@ -125,7 +134,109 @@ const requireNotionRepository = (reply: any) => {
   return null
 }
 
+const requireLineConfig = (reply: any) => {
+  if (lineConfig.success) return lineConfig.data
+  reply.code(500).send({
+    message: 'LINE login is not configured. Set LINE_CHANNEL_ID, LINE_CHANNEL_SECRET, LINE_CALLBACK_URL.'
+  })
+  return null
+}
+
 app.get('/health', async () => ({ ok: true, notionConfigured: Boolean(notionRepository) }))
+
+app.get('/api/auth/line/login-url', async (request, reply) => {
+  const line = requireLineConfig(reply)
+  if (!line) return
+
+  const query = z
+    .object({
+      redirectUri: z.string().url()
+    })
+    .safeParse(request.query)
+
+  if (!query.success) {
+    return reply.code(400).send({ message: 'redirectUri is required' })
+  }
+
+  const state = crypto.randomUUID()
+  lineLoginStateStore.set(state, {
+    redirectUri: query.data.redirectUri,
+    createdAt: Date.now()
+  })
+
+  const authUrl = new URL('https://access.line.me/oauth2/v2.1/authorize')
+  authUrl.searchParams.set('response_type', 'code')
+  authUrl.searchParams.set('client_id', line.LINE_CHANNEL_ID)
+  authUrl.searchParams.set('redirect_uri', line.LINE_CALLBACK_URL)
+  authUrl.searchParams.set('state', state)
+  authUrl.searchParams.set('scope', 'profile openid')
+
+  return { url: authUrl.toString() }
+})
+
+app.get('/api/auth/line/callback', async (request, reply) => {
+  const line = requireLineConfig(reply)
+  if (!line) return
+
+  const query = z
+    .object({
+      code: z.string().min(1),
+      state: z.string().min(1)
+    })
+    .safeParse(request.query)
+
+  if (!query.success) {
+    return reply.code(400).send({ message: 'Invalid LINE callback query' })
+  }
+
+  const statePayload = lineLoginStateStore.get(query.data.state)
+  if (!statePayload) {
+    return reply.code(400).send({ message: 'Invalid or expired LINE state' })
+  }
+
+  lineLoginStateStore.delete(query.data.state)
+  if (Date.now() - statePayload.createdAt > 10 * 60 * 1000) {
+    return reply.code(400).send({ message: 'LINE state expired' })
+  }
+
+  const tokenBody = new URLSearchParams({
+    grant_type: 'authorization_code',
+    code: query.data.code,
+    redirect_uri: line.LINE_CALLBACK_URL,
+    client_id: line.LINE_CHANNEL_ID,
+    client_secret: line.LINE_CHANNEL_SECRET
+  })
+
+  const tokenRes = await fetch('https://api.line.me/oauth2/v2.1/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: tokenBody.toString()
+  })
+
+  if (!tokenRes.ok) {
+    const text = await tokenRes.text()
+    request.log.error({ status: tokenRes.status, text }, 'line token exchange failed')
+    return reply.code(502).send({ message: 'LINE token exchange failed' })
+  }
+
+  const tokenJson = (await tokenRes.json()) as { access_token: string }
+  const profileRes = await fetch('https://api.line.me/v2/profile', {
+    headers: { Authorization: `Bearer ${tokenJson.access_token}` }
+  })
+
+  if (!profileRes.ok) {
+    const text = await profileRes.text()
+    request.log.error({ status: profileRes.status, text }, 'line profile fetch failed')
+    return reply.code(502).send({ message: 'LINE profile fetch failed' })
+  }
+
+  const profile = (await profileRes.json()) as { userId: string; displayName: string }
+  const nextUrl = new URL(statePayload.redirectUri)
+  nextUrl.searchParams.set('line_user_id', profile.userId)
+  nextUrl.searchParams.set('line_display_name', profile.displayName)
+
+  return reply.redirect(nextUrl.toString())
+})
 
 app.get('/api/site/content', async (request, reply) => {
   const repo = requireNotionRepository(reply)

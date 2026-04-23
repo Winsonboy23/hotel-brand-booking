@@ -55,3 +55,10 @@ npm run notion:bootstrap --workspace @hotel/api
    - `NOTION_ACTIVITIES_DB_ID`
    - `NOTION_POLICIES_DB_ID`
    - `NOTION_BOOKINGS_DB_ID`
+
+## Notion-backed API Endpoints
+- `GET /api/site/content` - return rooms/activities/policies from Notion
+- `POST /api/bookings` - create a booking in Notion (status defaults to `pending_remittance`)
+- `GET /api/bookings/me?lineUserId=...` - query bookings by bound LINE user id
+- `GET /api/auth/line/login-url?redirectUri=...` - get LINE Login URL
+- `GET /api/auth/line/callback` - LINE OAuth callback (redirects back to frontend with line user info)
