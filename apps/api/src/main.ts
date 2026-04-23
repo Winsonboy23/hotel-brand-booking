@@ -96,6 +96,14 @@ const googleWorkspaceService = googleConfig.success
     })
   : null
 
+const siteContentCache: {
+  data: { rooms: unknown[]; activities: unknown[]; policies: unknown[] } | null
+  expiresAt: number
+} = {
+  data: null,
+  expiresAt: 0
+}
+
 const seedPromotions: Promotion[] = [
   {
     id: 'promo-spring-2026',
@@ -303,13 +311,28 @@ app.get('/api/site/content', async (request, reply) => {
   const repo = requireNotionRepository(reply)
   if (!repo) return
 
+  const query = z
+    .object({
+      refresh: z.coerce.number().optional()
+    })
+    .safeParse(request.query)
+
+  const forceRefresh = query.success ? Boolean(query.data.refresh) : false
+  if (!forceRefresh && siteContentCache.data && siteContentCache.expiresAt > Date.now()) {
+    return siteContentCache.data
+  }
+
   const [rooms, activities, policies] = await Promise.all([
     repo.getRooms(),
     repo.getActivities(),
     repo.getPolicies()
   ])
 
-  return { rooms, activities, policies }
+  const payload = { rooms, activities, policies }
+  siteContentCache.data = payload
+  siteContentCache.expiresAt = Date.now() + 60 * 1000
+
+  return payload
 })
 
 app.post('/api/bookings', async (request, reply) => {

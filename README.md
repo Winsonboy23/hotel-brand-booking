@@ -57,12 +57,12 @@ npm run notion:bootstrap --workspace @hotel/api
    - `NOTION_BOOKINGS_DB_ID`
 
 ## Notion-backed API Endpoints
-- `GET /api/site/content` - return rooms/activities/policies from Notion
+- `GET /api/site/content` - return rooms/activities/policies from Notion (60s cache, `?refresh=1` to bypass)
 - `POST /api/bookings` - create a booking in Notion (status defaults to `pending_remittance`)
 - `GET /api/bookings/me?lineUserId=...` - query bookings by bound LINE user id
 - `GET /api/auth/line/login-url?redirectUri=...` - get LINE Login URL
 - `GET /api/auth/line/callback` - LINE OAuth callback (redirects back to frontend with line user info)
-- `POST /api/jobs/sync-booking-status` - sync booking status changes from Notion and send email notifications
+- `POST /api/jobs/sync-booking-status` - sync booking status changes from Notion and send email notifications (`x-job-token` required only if `JOB_SYNC_TOKEN` is set)
 
 ## Google Integration (Email + Calendar)
 Required envs:
