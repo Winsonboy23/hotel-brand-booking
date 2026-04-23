@@ -1,6 +1,6 @@
 import { Client } from '@notionhq/client'
 import { z } from 'zod'
-import { REQUIRED_DATABASE_SPECS } from '../notion/schema.js'
+import { bootstrapNotionDatabases } from '../notion/bootstrapDatabases.js'
 
 const envSchema = z.object({
   NOTION_API_KEY: z.string().min(1),
@@ -11,26 +11,21 @@ const env = envSchema.parse(process.env)
 
 const notion = new Client({ auth: env.NOTION_API_KEY })
 
-const normalize = (value: string) => value.replaceAll('-', '')
-
 const run = async () => {
-  const result: Record<string, string> = {}
+  const result = await bootstrapNotionDatabases(notion, env.NOTION_PARENT_PAGE_ID)
 
-  for (const spec of REQUIRED_DATABASE_SPECS) {
-    const created = await notion.databases.create({
-      parent: {
-        type: 'page_id',
-        page_id: normalize(env.NOTION_PARENT_PAGE_ID)
+  process.stdout.write(
+    `${JSON.stringify(
+      {
+        Rooms: result.roomsDbId,
+        Activities: result.activitiesDbId,
+        Policies: result.policiesDbId,
+        Bookings: result.bookingsDbId
       },
-      title: [{ type: 'text', text: { content: spec.title } }],
-      // Notion SDK type is narrower; runtime accepts this structure.
-      properties: spec.properties as any
-    })
-
-    result[spec.title] = created.id
-  }
-
-  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`)
+      null,
+      2
+    )}\n`
+  )
 }
 
 run().catch((error) => {

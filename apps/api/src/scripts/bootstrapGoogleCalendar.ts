@@ -1,5 +1,5 @@
-import { google } from 'googleapis'
 import { z } from 'zod'
+import { createGoogleCalendar } from '../integrations/googleCalendarSetup.js'
 
 const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().min(1),
@@ -19,38 +19,23 @@ const env = envSchema.parse({
   GOOGLE_CALENDAR_TIMEZONE: process.env.GOOGLE_CALENDAR_TIMEZONE
 })
 
-const oauth2Client = new google.auth.OAuth2(
-  env.GOOGLE_CLIENT_ID,
-  env.GOOGLE_CLIENT_SECRET,
-  env.GOOGLE_CALLBACK_URL
-)
-
-oauth2Client.setCredentials({
-  refresh_token: env.GOOGLE_REFRESH_TOKEN
-})
-
-const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
-
 const run = async () => {
-  const created = await calendar.calendars.insert({
-    requestBody: {
-      summary: env.GOOGLE_CALENDAR_SUMMARY,
-      timeZone: env.GOOGLE_CALENDAR_TIMEZONE
-    }
-  })
-
-  const calendarId = created.data.id
-  if (!calendarId) {
-    throw new Error('Google Calendar created but id is missing.')
-  }
+  const created = await createGoogleCalendar(
+    {
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      callbackUrl: env.GOOGLE_CALLBACK_URL,
+      refreshToken: env.GOOGLE_REFRESH_TOKEN
+    },
+    env.GOOGLE_CALENDAR_SUMMARY,
+    env.GOOGLE_CALENDAR_TIMEZONE
+  )
 
   process.stdout.write(
     `${JSON.stringify(
       {
         ok: true,
-        calendarId,
-        summary: created.data.summary,
-        timeZone: created.data.timeZone
+        ...created
       },
       null,
       2

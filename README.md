@@ -71,6 +71,24 @@ npm run notion:seed-demo --workspace @hotel/api
 NOTION_SEED_CLEAR=0 npm run notion:seed-demo --workspace @hotel/api
 ```
 
+## One-Command Setup (Single Brand)
+整合 Notion 建庫 + Demo 資料 +（可選）Google Calendar 建立：
+```bash
+npm run setup:single-brand --workspace @hotel/api
+```
+
+常見參數：
+```bash
+# 只看會做哪些動作，不實際寫入
+SETUP_DRY_RUN=1 npm run setup:single-brand --workspace @hotel/api
+
+# 不建立 Demo 資料
+SETUP_SEED_DEMO=0 npm run setup:single-brand --workspace @hotel/api
+
+# 建立 Google Calendar（需 Google env 已完整）
+SETUP_BOOTSTRAP_GOOGLE_CALENDAR=1 npm run setup:single-brand --workspace @hotel/api
+```
+
 ## Notion-backed API Endpoints
 - `GET /api/site/content` - return rooms/activities/policies from Notion (60s cache, `?refresh=1` to bypass)
 - `POST /api/bookings` - create a booking in Notion (status defaults to `pending_remittance`)
