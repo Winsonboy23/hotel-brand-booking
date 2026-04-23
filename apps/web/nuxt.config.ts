@@ -1,9 +1,7 @@
-import tailwindcss from '@tailwindcss/vite'
-
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  css: ['~/app/assets/css/main.css'],
+  css: ['~/css/main.css'],
   site: {
     url: 'https://hotel-brand-booking.zeabur.app'
   },
@@ -17,18 +15,7 @@ export default defineNuxtConfig({
     appManifest: false,
     payloadExtraction: false
   },
-  nitro: {
-    prerender: {
-      routes: ['/nanasen', '/quexi']
-    }
-  },
-  routeRules: {
-    '/nanasen.html': { redirect: '/nanasen' }
-  },
   app: {
     buildAssetsDir: '/assets/'
-  },
-  vite: {
-    plugins: [tailwindcss()]
   }
 })

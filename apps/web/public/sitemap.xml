@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://homepage-nuxt-eta.vercel.app/nanasen</loc>
+    <loc>https://hotel-brand-booking.zeabur.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://homepage-nuxt-eta.vercel.app/quexi</loc>
+    <loc>https://hotel-brand-booking.zeabur.app/rooms</loc>
     <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hotel-brand-booking.zeabur.app/booking</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>

@@ -4,8 +4,7 @@ const route = useRoute()
 const links = [
   { label: '首頁', href: '/' },
   { label: '房型介紹', href: '/rooms' },
-  { label: '我要訂房', href: '/booking' },
-  { label: '會員中心', href: '/member' }
+  { label: '我要訂房', href: '/booking' }
 ]
 
 const isActive = (href: string) => (href === '/' ? route.path === '/' : route.path.startsWith(href))
