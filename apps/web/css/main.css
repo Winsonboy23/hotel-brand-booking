@@ -711,6 +711,31 @@ h3 {
   color: var(--accent);
 }
 
+.booking-summary__policies {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.booking-summary__policies h3 {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.booking-summary__policies ul {
+  margin-top: 0.55rem;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.booking-summary__policies li {
+  color: color-mix(in srgb, var(--text) 82%, transparent);
+  line-height: 1.5;
+}
+
 .booking-confirm {
   margin-top: 1rem;
   display: grid;

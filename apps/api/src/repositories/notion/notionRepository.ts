@@ -3,6 +3,7 @@ import type {
   ActivityContent,
   BookingInput,
   BookingRecord,
+  BookingStatus,
   NotionDatabaseIds,
   PolicyContent,
   RoomContent
@@ -193,5 +194,29 @@ export class NotionRepository {
     })
 
     return response.results.map(toBooking)
+  }
+
+  async getBookingById(pageId: string): Promise<BookingRecord> {
+    const response = await this.notion.pages.retrieve({
+      page_id: pageId
+    })
+
+    return toBooking(response)
+  }
+
+  async updateBookingStatus(pageId: string, status: BookingStatus, remittanceNote?: string): Promise<BookingRecord> {
+    const response = await this.notion.pages.update({
+      page_id: pageId,
+      properties: {
+        Status: { select: { name: status } },
+        ...(typeof remittanceNote === 'string'
+          ? {
+              'Remittance Note': { rich_text: [{ text: { content: remittanceNote } }] }
+            }
+          : {})
+      }
+    })
+
+    return toBooking(response)
   }
 }

@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { facilities, hotelProfile, metrics } from '~/data/hotel'
-
 const { formatTwd } = useCurrency()
-const { rooms, activities } = useSiteContent()
+const { rooms, activities, facilities, metrics, brandProfile } = useSiteContent()
 const carouselIndex = ref(0)
 
 const activeRoom = computed(() => rooms.value[carouselIndex.value])
@@ -24,16 +22,14 @@ useHead({
 <template>
   <div>
     <section class="home-hero">
-      <img :src="hotelProfile.heroImage" :alt="hotelProfile.name" class="home-hero__bg">
+      <img :src="brandProfile.heroImage" alt="HOTEL AURORA" class="home-hero__bg">
       <div class="home-hero__overlay" />
       <div class="home-hero__halo" aria-hidden="true" />
 
       <div class="site-shell home-hero__content">
-        <p class="home-eyebrow">{{ hotelProfile.localName }}</p>
-        <h1 class="home-title">{{ hotelProfile.tagline }}</h1>
-        <p class="home-subtitle">
-          一站式官方前台，快速完成房型瀏覽、費用試算與預約流程。
-        </p>
+        <p class="home-eyebrow">{{ brandProfile.localName }}</p>
+        <h1 class="home-title">{{ brandProfile.tagline }}</h1>
+        <p class="home-subtitle">{{ brandProfile.subtitle }}</p>
         <div class="home-hero__actions">
           <NuxtLink to="/rooms" class="site-btn">探索房型</NuxtLink>
           <NuxtLink to="/booking" class="site-btn site-btn--ghost site-btn--light">立即預約</NuxtLink>

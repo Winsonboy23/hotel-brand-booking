@@ -5,7 +5,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { NotionRepository } from './repositories/notion/notionRepository.js'
-import type { BookingRecord, NotionDatabaseIds } from './repositories/notion/types.js'
+import type { BookingRecord, BookingStatus, NotionDatabaseIds } from './repositories/notion/types.js'
 import { GoogleWorkspaceService } from './integrations/googleWorkspace.js'
 
 const app = Fastify({ logger: true })
@@ -37,6 +37,11 @@ const googleEnvSchema = z.object({
   GOOGLE_GMAIL_SENDER: z.string().email(),
   GOOGLE_CALENDAR_ID: z.string().min(1),
   GOOGLE_ADMIN_NOTIFY_EMAIL: z.string().email().optional()
+})
+
+const securityEnvSchema = z.object({
+  ALERT_WEBHOOK_URL: z.string().url().optional(),
+  ADMIN_API_TOKEN: z.string().min(1).optional()
 })
 
 const promotionSchema = z.object({
@@ -95,6 +100,7 @@ const googleWorkspaceService = googleConfig.success
       adminNotifyEmail: googleConfig.data.GOOGLE_ADMIN_NOTIFY_EMAIL
     })
   : null
+const securityConfig = securityEnvSchema.safeParse(process.env)
 
 const siteContentCache: {
   data: { rooms: unknown[]; activities: unknown[]; policies: unknown[] } | null
@@ -102,6 +108,81 @@ const siteContentCache: {
 } = {
   data: null,
   expiresAt: 0
+}
+
+type RateLimitEntry = {
+  count: number
+  resetAt: number
+}
+
+const requestRateLimit = new Map<string, RateLimitEntry>()
+const bookingDedupeWindow = new Map<string, number>()
+
+const nowTs = () => Date.now()
+
+const checkRateLimit = (key: string, limit: number, windowMs: number): boolean => {
+  const now = nowTs()
+  const current = requestRateLimit.get(key)
+
+  if (!current || current.resetAt <= now) {
+    requestRateLimit.set(key, { count: 1, resetAt: now + windowMs })
+    return true
+  }
+
+  if (current.count >= limit) return false
+  current.count += 1
+  requestRateLimit.set(key, current)
+  return true
+}
+
+const cleanupBookingDedupe = () => {
+  const now = nowTs()
+  for (const [key, expireAt] of bookingDedupeWindow.entries()) {
+    if (expireAt <= now) bookingDedupeWindow.delete(key)
+  }
+}
+
+const reserveBookingDedupe = (key: string, ttlMs: number): boolean => {
+  cleanupBookingDedupe()
+  const now = nowTs()
+  const exists = bookingDedupeWindow.get(key)
+  if (exists && exists > now) return false
+  bookingDedupeWindow.set(key, now + ttlMs)
+  return true
+}
+
+const releaseBookingDedupe = (key: string) => {
+  bookingDedupeWindow.delete(key)
+}
+
+const allowedStatusTransitions: Record<BookingStatus, BookingStatus[]> = {
+  pending_remittance: ['remitted', 'cancelled'],
+  remitted: ['confirmed', 'cancelled'],
+  confirmed: [],
+  cancelled: []
+}
+
+const isValidBookingStatusTransition = (from: BookingStatus, to: BookingStatus) =>
+  from === to || allowedStatusTransitions[from].includes(to)
+
+const sendAlert = async (title: string, context: Record<string, unknown>) => {
+  if (!securityConfig.success || !securityConfig.data.ALERT_WEBHOOK_URL) return
+
+  try {
+    await fetch(securityConfig.data.ALERT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        level: 'error',
+        service: 'hotel-api',
+        title,
+        context,
+        at: new Date().toISOString()
+      })
+    })
+  } catch {
+    // Avoid recursive alert failures from breaking user-facing APIs.
+  }
 }
 
 const seedPromotions: Promotion[] = [
@@ -216,6 +297,11 @@ app.get('/health', async () => ({
 app.get('/api/auth/line/login-url', async (request, reply) => {
   const line = requireLineConfig(reply)
   if (!line) return
+  const ip = request.ip ?? 'unknown'
+
+  if (!checkRateLimit(`line-login:${ip}`, 20, 60 * 1000)) {
+    return reply.code(429).send({ message: 'Too many LINE login requests, please try again later.' })
+  }
 
   const query = z
     .object({
@@ -285,6 +371,7 @@ app.get('/api/auth/line/callback', async (request, reply) => {
   if (!tokenRes.ok) {
     const text = await tokenRes.text()
     request.log.error({ status: tokenRes.status, text }, 'line token exchange failed')
+    await sendAlert('LINE token exchange failed', { status: tokenRes.status, text })
     return reply.code(502).send({ message: 'LINE token exchange failed' })
   }
 
@@ -296,6 +383,7 @@ app.get('/api/auth/line/callback', async (request, reply) => {
   if (!profileRes.ok) {
     const text = await profileRes.text()
     request.log.error({ status: profileRes.status, text }, 'line profile fetch failed')
+    await sendAlert('LINE profile fetch failed', { status: profileRes.status, text })
     return reply.code(502).send({ message: 'LINE profile fetch failed' })
   }
 
@@ -335,9 +423,35 @@ app.get('/api/site/content', async (request, reply) => {
   return payload
 })
 
+app.post('/api/site/content/revalidate', async (request, reply) => {
+  const repo = requireNotionRepository(reply)
+  if (!repo) return
+
+  const expected = securityConfig.success ? securityConfig.data.ADMIN_API_TOKEN?.trim() : undefined
+  if (expected) {
+    const provided = (request.headers['x-admin-token'] ?? '').toString()
+    if (provided !== expected) {
+      return reply.code(401).send({ message: 'Unauthorized admin token' })
+    }
+  }
+
+  const [rooms, activities, policies] = await Promise.all([repo.getRooms(), repo.getActivities(), repo.getPolicies()])
+
+  const payload = { rooms, activities, policies }
+  siteContentCache.data = payload
+  siteContentCache.expiresAt = Date.now() + 60 * 1000
+
+  return { status: 'revalidated', counts: { rooms: rooms.length, activities: activities.length, policies: policies.length } }
+})
+
 app.post('/api/bookings', async (request, reply) => {
   const repo = requireNotionRepository(reply)
   if (!repo) return
+  const ip = request.ip ?? 'unknown'
+
+  if (!checkRateLimit(`booking:${ip}`, 15, 60 * 1000)) {
+    return reply.code(429).send({ message: 'Too many booking requests, please try again later.' })
+  }
 
   const schema = z.object({
     roomSlug: z.string().min(1),
@@ -359,7 +473,33 @@ app.post('/api/bookings', async (request, reply) => {
     return reply.code(400).send({ message: 'Invalid payload', errors: parsed.error.flatten() })
   }
 
-  const booking = await repo.createBooking(parsed.data)
+  const dedupeKey = [
+    parsed.data.lineUserId,
+    parsed.data.roomSlug,
+    parsed.data.checkIn,
+    parsed.data.checkOut,
+    parsed.data.guestName,
+    parsed.data.phone
+  ].join('|')
+
+  if (!reserveBookingDedupe(dedupeKey, 90 * 1000)) {
+    return reply.code(409).send({ message: 'Duplicate booking submission detected. Please wait and retry.' })
+  }
+
+  let booking: BookingRecord
+  try {
+    booking = await repo.createBooking(parsed.data)
+  } catch (error) {
+    releaseBookingDedupe(dedupeKey)
+    await sendAlert('Notion booking creation failed', {
+      lineUserId: parsed.data.lineUserId,
+      roomSlug: parsed.data.roomSlug,
+      checkIn: parsed.data.checkIn,
+      checkOut: parsed.data.checkOut,
+      error: String(error)
+    })
+    throw error
+  }
 
   const cache = await readBookingStatusCache()
   cache[booking.id] = { status: booking.status, lastEditedAt: booking.lastEditedAt }
@@ -370,6 +510,7 @@ app.post('/api/bookings', async (request, reply) => {
       await googleWorkspaceService.notifyBookingCreated(booking)
     } catch (error) {
       request.log.error({ error, bookingId: booking.id }, 'failed to send booking created notifications')
+      await sendAlert('Google booking created notification failed', { bookingId: booking.id, error: String(error) })
     }
   }
 
@@ -406,6 +547,7 @@ app.post('/api/jobs/sync-booking-status', async (request, reply) => {
   const bookings = await repo.listBookingsForStatusSync(100)
   const cache = await readBookingStatusCache()
   let changed = 0
+  let invalidTransitions = 0
 
   for (const booking of bookings) {
     const previous = cache[booking.id]
@@ -413,6 +555,41 @@ app.post('/api/jobs/sync-booking-status', async (request, reply) => {
     if (!previous) {
       cache[booking.id] = { status: booking.status, lastEditedAt: booking.lastEditedAt }
       continue
+    }
+
+    if (previous.status !== booking.status) {
+      if (!isValidBookingStatusTransition(previous.status, booking.status)) {
+        invalidTransitions += 1
+        request.log.warn(
+          { bookingId: booking.id, from: previous.status, to: booking.status },
+          'illegal booking status transition detected'
+        )
+        await sendAlert('Illegal booking status transition', {
+          bookingId: booking.id,
+          bookingNo: booking.bookingNo,
+          from: previous.status,
+          to: booking.status
+        })
+
+        try {
+          const reverted = await repo.updateBookingStatus(
+            booking.id,
+            previous.status,
+            `[AUTO-REVERT] Illegal transition ${previous.status} -> ${booking.status} detected at ${new Date().toISOString()}`
+          )
+          cache[booking.id] = { status: reverted.status, lastEditedAt: reverted.lastEditedAt }
+        } catch (error) {
+          request.log.error({ error, bookingId: booking.id }, 'failed to revert illegal status transition')
+          await sendAlert('Failed to revert illegal booking status transition', {
+            bookingId: booking.id,
+            from: previous.status,
+            to: booking.status,
+            error: String(error)
+          })
+        }
+
+        continue
+      }
     }
 
     if (previous.status !== booking.status && ['remitted', 'confirmed', 'cancelled'].includes(booking.status)) {
@@ -424,6 +601,12 @@ app.post('/api/jobs/sync-booking-status', async (request, reply) => {
           { error, bookingId: booking.id, from: previous.status, to: booking.status },
           'failed to send status changed notification'
         )
+        await sendAlert('Booking status change notification failed', {
+          bookingId: booking.id,
+          from: previous.status,
+          to: booking.status,
+          error: String(error)
+        })
       }
     }
 
@@ -431,7 +614,7 @@ app.post('/api/jobs/sync-booking-status', async (request, reply) => {
   }
 
   await writeBookingStatusCache(cache)
-  return { synced: bookings.length, changed }
+  return { synced: bookings.length, changed, invalidTransitions }
 })
 
 app.get('/api/promotions/recent', async () => {

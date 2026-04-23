@@ -36,6 +36,13 @@ This project uses Notion as the source of truth for website content and booking 
 - `Sort` (Number)
 - `Is Active` (Checkbox)
 
+Notice 用法（首頁動態內容）:
+- `type = notice` + `Title = brand.local_name` → 首頁品牌中文名
+- `type = notice` + `Title = brand.tagline` → 首頁標題
+- `type = notice` + `Title = brand.subtitle` → 首頁副標
+- `type = notice` + `Title = facility:<設施標題>` → 首頁設施卡
+- `type = notice` + `Title = metric:<指標標題>` → 首頁指標，`Content` 為數值
+
 4. `Bookings`
 - `Booking No` (Title)
 - `Status` (Select: pending_remittance, remitted, confirmed, cancelled)

@@ -1,4 +1,11 @@
-import { activities as fallbackActivities, rooms as fallbackRooms, stayPolicies } from '~/data/hotel'
+import {
+  activities as fallbackActivities,
+  facilities as fallbackFacilities,
+  hotelProfile as fallbackHotelProfile,
+  metrics as fallbackMetrics,
+  rooms as fallbackRooms,
+  stayPolicies
+} from '~/data/hotel'
 
 type RoomContent = {
   id: string
@@ -39,6 +46,23 @@ type SiteContentResponse = {
   policies: PolicyContent[]
 }
 
+type SiteBrandProfile = {
+  localName: string
+  tagline: string
+  subtitle: string
+  heroImage: string
+}
+
+type SiteFacility = {
+  title: string
+  description: string
+}
+
+type SiteMetric = {
+  value: string
+  label: string
+}
+
 const fallback = {
   rooms: fallbackRooms,
   activities: fallbackActivities,
@@ -76,10 +100,56 @@ export const useSiteContent = () => {
   const activities = computed(() => state.data.value?.activities ?? fallback.activities)
   const policies = computed(() => state.data.value?.policies ?? fallback.policies)
 
+  const noticePolicies = computed(() => policies.value.filter((item) => item.type === 'notice'))
+
+  const brandProfile = computed<SiteBrandProfile>(() => {
+    const localName = noticePolicies.value.find((item) => item.title === 'brand.local_name')?.content
+    const tagline = noticePolicies.value.find((item) => item.title === 'brand.tagline')?.content
+    const subtitle = noticePolicies.value.find((item) => item.title === 'brand.subtitle')?.content
+    const heroImage = noticePolicies.value.find((item) => item.title === 'brand.hero_image')?.content
+
+    return {
+      localName: localName || fallbackHotelProfile.localName,
+      tagline: tagline || fallbackHotelProfile.tagline,
+      subtitle: subtitle || '一站式官方前台，快速完成房型瀏覽、費用試算與預約流程。',
+      heroImage: heroImage || fallbackHotelProfile.heroImage
+    }
+  })
+
+  const facilities = computed<SiteFacility[]>(() => {
+    const fromNotion = noticePolicies.value
+      .filter((item) => item.title.startsWith('facility:'))
+      .map((item) => ({
+        title: item.title.replace('facility:', '').trim(),
+        description: item.content
+      }))
+      .filter((item) => item.title && item.description)
+
+    return fromNotion.length ? fromNotion : fallbackFacilities
+  })
+
+  const metrics = computed<SiteMetric[]>(() => {
+    const fromNotion = noticePolicies.value
+      .filter((item) => item.title.startsWith('metric:'))
+      .map((item) => {
+        const label = item.title.replace('metric:', '').trim()
+        return {
+          label,
+          value: item.content.trim()
+        }
+      })
+      .filter((item) => item.label && item.value)
+
+    return fromNotion.length ? fromNotion : fallbackMetrics
+  })
+
   return {
     ...state,
     rooms,
     activities,
-    policies
+    policies,
+    brandProfile,
+    facilities,
+    metrics
   }
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const { formatTwd } = useCurrency()
-const { rooms } = useSiteContent()
+const { rooms, policies } = useSiteContent()
 const config = useRuntimeConfig()
 const apiBaseUrl = config.public.apiBaseUrl as string
 
@@ -81,6 +81,9 @@ const nights = computed(() => {
   return diff > 0 ? diff : 0
 })
 const subtotal = computed(() => (selectedRoom.value ? selectedRoom.value.priceFrom * nights.value : 0))
+const bookingPolicies = computed(() =>
+  policies.value.filter((item) => ['stay', 'cancellation', 'remittance'].includes(item.type)).map((item) => item.content)
+)
 
 const errors = computed(() => ({
   checkIn: !form.checkIn ? '請選擇入住日期' : '',
@@ -288,6 +291,12 @@ useHead({
         <p>每晚：{{ formatTwd(selectedRoom?.priceFrom ?? 0) }}</p>
         <p>夜數：{{ nights }} 晚</p>
         <p class="booking-summary__total">總計：{{ formatTwd(subtotal) }}</p>
+        <div class="booking-summary__policies">
+          <h3>預約政策</h3>
+          <ul>
+            <li v-for="(item, index) in bookingPolicies" :key="`${index}-${item}`">{{ item }}</li>
+          </ul>
+        </div>
       </aside>
     </section>
 

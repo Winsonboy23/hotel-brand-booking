@@ -46,10 +46,12 @@ export type BookingInput = {
   remittanceNote?: string
 }
 
+export type BookingStatus = 'pending_remittance' | 'remitted' | 'confirmed' | 'cancelled'
+
 export type BookingRecord = {
   id: string
   bookingNo: string
-  status: 'pending_remittance' | 'remitted' | 'confirmed' | 'cancelled'
+  status: BookingStatus
   roomSlug: string
   checkIn: string
   checkOut: string

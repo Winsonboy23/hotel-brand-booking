@@ -230,6 +230,72 @@ const seedPolicies = async (notion: Client, databaseId: string) => {
       type: 'remittance',
       content: '請於訂單建立後 24 小時內完成匯款。',
       sort: 4
+    },
+    {
+      title: 'brand.local_name',
+      type: 'notice',
+      content: '晨曦酒店',
+      sort: 90
+    },
+    {
+      title: 'brand.tagline',
+      type: 'notice',
+      content: '在城市中，享受安定與儀式感',
+      sort: 91
+    },
+    {
+      title: 'brand.subtitle',
+      type: 'notice',
+      content: '一站式官方前台，快速完成房型瀏覽、費用試算與預約流程。',
+      sort: 92
+    },
+    {
+      title: 'facility:Skyline Infinity Pool',
+      type: 'notice',
+      content: '高樓層無邊際泳池，日夜皆可欣賞城市天際線。',
+      sort: 93
+    },
+    {
+      title: 'facility:Aurora Signature Dining',
+      type: 'notice',
+      content: '全日供餐與晚間主廚套餐，提供在地與國際融合料理。',
+      sort: 94
+    },
+    {
+      title: 'facility:Wellness & Spa',
+      type: 'notice',
+      content: '芳療、蒸氣室與靜謐放鬆空間，為旅程留一段修復時間。',
+      sort: 95
+    },
+    {
+      title: 'facility:Executive Lounge',
+      type: 'notice',
+      content: '商務會談、遠端工作與輕食飲品，全天候開放。',
+      sort: 96
+    },
+    {
+      title: 'metric:恆溫泳池',
+      type: 'notice',
+      content: '18m',
+      sort: 97
+    },
+    {
+      title: 'metric:主題餐廳',
+      type: 'notice',
+      content: '3',
+      sort: 98
+    },
+    {
+      title: 'metric:水療中心',
+      type: 'notice',
+      content: '24/7',
+      sort: 99
+    },
+    {
+      title: 'metric:專屬管家',
+      type: 'notice',
+      content: '1:1',
+      sort: 100
     }
   ]
 

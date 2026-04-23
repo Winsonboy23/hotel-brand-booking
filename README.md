@@ -91,6 +91,7 @@ SETUP_BOOTSTRAP_GOOGLE_CALENDAR=1 npm run setup:single-brand --workspace @hotel/
 
 ## Notion-backed API Endpoints
 - `GET /api/site/content` - return rooms/activities/policies from Notion (60s cache, `?refresh=1` to bypass)
+- `POST /api/site/content/revalidate` - refresh Notion content cache immediately (`x-admin-token` required only if `ADMIN_API_TOKEN` is set)
 - `POST /api/bookings` - create a booking in Notion (status defaults to `pending_remittance`)
 - `GET /api/bookings/me?lineUserId=...` - query bookings by bound LINE user id
 - `GET /api/auth/line/login-url?redirectUri=...` - get LINE Login URL
@@ -110,8 +111,28 @@ Required envs:
 Behavior:
 - On booking creation, system sends Gmail notifications and inserts a Google Calendar event.
 - `sync-booking-status` job detects status transitions (e.g. `pending_remittance -> remitted`) and sends update emails.
+- Illegal transition guard is enabled in sync job:
+  - allowed: `pending_remittance -> remitted|cancelled`
+  - allowed: `remitted -> confirmed|cancelled`
+  - others are auto-reverted and recorded.
 
 可選：先建立專用 Google Calendar，再把輸出的 `calendarId` 寫入 `GOOGLE_CALENDAR_ID`：
 ```bash
 npm run google:bootstrap-calendar --workspace @hotel/api
 ```
+
+## Security Defaults
+- API rate limiting (in-memory):
+  - LINE login URL endpoint
+  - Booking creation endpoint
+- Booking duplicate submission protection (90 seconds window, based on booking identity fields)
+- Optional admin/job token:
+  - `JOB_SYNC_TOKEN` for sync job endpoint
+  - `ADMIN_API_TOKEN` for cache revalidate endpoint
+- Optional error alert webhook:
+  - `ALERT_WEBHOOK_URL`
+
+## Ops Docs
+- Onboarding: `docs/onboarding.md`
+- 客服匯款狀態操作：`docs/customer-service-remittance-sop.md`
+- UAT 清單：`docs/uat-checklist.md`
