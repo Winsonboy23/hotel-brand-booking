@@ -39,3 +39,19 @@ docker compose up -d
 
 ## Environment Variables
 請參考 `.env.example`。
+
+## Notion Bootstrap (Single Brand)
+1. 在 Notion 建立一個空白 parent page，並把該 page share 給 integration。
+2. 設定環境變數：
+   - `NOTION_API_KEY`
+   - `NOTION_PARENT_PAGE_ID`
+3. 執行：
+```bash
+npm run notion:bootstrap --workspace @hotel/api
+```
+4. 指令會輸出四個 DB ID（Rooms / Activities / Policies / Bookings），
+   把它們填回環境變數：
+   - `NOTION_ROOMS_DB_ID`
+   - `NOTION_ACTIVITIES_DB_ID`
+   - `NOTION_POLICIES_DB_ID`
+   - `NOTION_BOOKINGS_DB_ID`

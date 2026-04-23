@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { rooms } from '~/data/hotel'
-
 const { formatTwd } = useCurrency()
+const { rooms } = useSiteContent()
 
 useHead({
   title: '房型介紹｜HOTEL AURORA',

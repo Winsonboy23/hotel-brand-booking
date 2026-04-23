@@ -4,12 +4,22 @@ import { z } from 'zod'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { NotionRepository } from './repositories/notion/notionRepository.js'
+import type { NotionDatabaseIds } from './repositories/notion/types.js'
 
 const app = Fastify({ logger: true })
 
 await app.register(cors, {
   origin: true,
   credentials: true
+})
+
+const notionEnvSchema = z.object({
+  NOTION_API_KEY: z.string().min(1),
+  NOTION_ROOMS_DB_ID: z.string().min(1),
+  NOTION_ACTIVITIES_DB_ID: z.string().min(1),
+  NOTION_POLICIES_DB_ID: z.string().min(1),
+  NOTION_BOOKINGS_DB_ID: z.string().min(1)
 })
 
 const promotionSchema = z.object({
@@ -41,6 +51,16 @@ const dir = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(dir, '..', 'data')
 const promotionsFile = join(dataDir, 'promotions.json')
 const remittancesFile = join(dataDir, 'remittances.json')
+
+const notionConfig = notionEnvSchema.safeParse(process.env)
+const notionRepository = notionConfig.success
+  ? new NotionRepository(notionConfig.data.NOTION_API_KEY, {
+      roomsDbId: notionConfig.data.NOTION_ROOMS_DB_ID,
+      activitiesDbId: notionConfig.data.NOTION_ACTIVITIES_DB_ID,
+      policiesDbId: notionConfig.data.NOTION_POLICIES_DB_ID,
+      bookingsDbId: notionConfig.data.NOTION_BOOKINGS_DB_ID
+    } satisfies NotionDatabaseIds)
+  : null
 
 const seedPromotions: Promotion[] = [
   {
@@ -96,7 +116,70 @@ const writeRemittances = async (rows: Remittance[]) => {
 const today = () => new Date().toISOString().slice(0, 10)
 const inRange = (value: string, from: string, to: string) => value >= from && value <= to
 
-app.get('/health', async () => ({ ok: true }))
+const requireNotionRepository = (reply: any) => {
+  if (notionRepository) return notionRepository
+  reply.code(500).send({
+    message:
+      'Notion repository is not configured. Set NOTION_API_KEY and NOTION_*_DB_ID environment variables.'
+  })
+  return null
+}
+
+app.get('/health', async () => ({ ok: true, notionConfigured: Boolean(notionRepository) }))
+
+app.get('/api/site/content', async (request, reply) => {
+  const repo = requireNotionRepository(reply)
+  if (!repo) return
+
+  const [rooms, activities, policies] = await Promise.all([
+    repo.getRooms(),
+    repo.getActivities(),
+    repo.getPolicies()
+  ])
+
+  return { rooms, activities, policies }
+})
+
+app.post('/api/bookings', async (request, reply) => {
+  const repo = requireNotionRepository(reply)
+  if (!repo) return
+
+  const schema = z.object({
+    roomSlug: z.string().min(1),
+    checkIn: z.string().date(),
+    checkOut: z.string().date(),
+    nights: z.coerce.number().int().min(1),
+    guests: z.coerce.number().int().min(1),
+    amount: z.coerce.number().int().min(0),
+    guestName: z.string().min(1),
+    email: z.string().email(),
+    phone: z.string().min(6),
+    lineUserId: z.string().min(1),
+    paymentMethod: z.enum(['bank_transfer', 'onsite_card_hold']),
+    remittanceNote: z.string().optional().default('')
+  })
+
+  const parsed = schema.safeParse(request.body)
+  if (!parsed.success) {
+    return reply.code(400).send({ message: 'Invalid payload', errors: parsed.error.flatten() })
+  }
+
+  const booking = await repo.createBooking(parsed.data)
+  return reply.code(201).send({ status: 'submitted', data: booking })
+})
+
+app.get('/api/bookings/me', async (request, reply) => {
+  const repo = requireNotionRepository(reply)
+  if (!repo) return
+
+  const query = z.object({ lineUserId: z.string().min(1) }).safeParse(request.query)
+  if (!query.success) {
+    return reply.code(400).send({ message: 'lineUserId is required' })
+  }
+
+  const rows = await repo.getBookingsByLineUserId(query.data.lineUserId)
+  return rows
+})
 
 app.get('/api/promotions/recent', async () => {
   const promotions = await readPromotions()

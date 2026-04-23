@@ -8,10 +8,12 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "lint": "echo \"No lint configured yet\""
+    "lint": "echo \"No lint configured yet\"",
+    "notion:bootstrap": "node --loader ts-node/esm src/scripts/bootstrapNotion.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
+    "@notionhq/client": "^2.2.15",
     "fastify": "^5.0.0",
     "zod": "^3.23.8"
   },

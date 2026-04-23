@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { findRoomBySlug, rooms, stayPolicies } from '~/data/hotel'
-
 const route = useRoute()
 const { formatTwd } = useCurrency()
+const { rooms, policies } = useSiteContent()
 
-const room = computed(() => findRoomBySlug(String(route.params.slug)))
+const room = computed(() => rooms.value.find((item) => item.slug === String(route.params.slug)))
 const activeImage = ref('')
 
 if (!room.value) {
@@ -23,8 +22,13 @@ watch(
 )
 
 const recommendations = computed(() =>
-  rooms.filter((candidate) => candidate.slug !== room.value?.slug).slice(0, 2)
+  rooms.value.filter((candidate) => candidate.slug !== room.value?.slug).slice(0, 2)
 )
+
+const stayPolicies = computed(() => {
+  const fromNotion = policies.value.filter((policy) => policy.type === 'stay').map((policy) => policy.content)
+  return fromNotion.length ? fromNotion : ['Check-in 15:00 後 / Check-out 11:00 前']
+})
 
 useHead(() => ({
   title: `${room.value?.name ?? '房型詳情'}｜HOTEL AURORA`,

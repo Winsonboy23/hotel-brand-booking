@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { findRoomBySlug, paymentMethods, rooms } from '~/data/hotel'
+import { paymentMethods } from '~/data/hotel'
 
 const route = useRoute()
 const { formatTwd } = useCurrency()
+const { rooms } = useSiteContent()
 
 const step = ref(1)
 const submitted = ref(false)
 const touched = ref(false)
 
 const form = reactive({
-  roomSlug: rooms[0]?.slug ?? '',
+  roomSlug: '',
   checkIn: '',
   checkOut: '',
   guests: 2,
@@ -21,13 +22,23 @@ const form = reactive({
 })
 
 if (typeof route.query.room === 'string') {
-  const target = findRoomBySlug(route.query.room)
+  const target = rooms.value.find((item) => item.slug === route.query.room)
   if (target) {
     form.roomSlug = target.slug
   }
 }
 
-const selectedRoom = computed(() => findRoomBySlug(form.roomSlug) ?? rooms[0])
+watch(
+  () => rooms.value,
+  (value) => {
+    if (!form.roomSlug && value.length) {
+      form.roomSlug = value[0]?.slug ?? ''
+    }
+  },
+  { immediate: true }
+)
+
+const selectedRoom = computed(() => rooms.value.find((item) => item.slug === form.roomSlug) ?? rooms.value[0])
 const nights = computed(() => {
   if (!form.checkIn || !form.checkOut) return 0
   const start = new Date(form.checkIn).getTime()
