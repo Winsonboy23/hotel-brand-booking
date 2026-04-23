@@ -14,6 +14,10 @@ npm install
 npm run dev
 ```
 
+建議本機預設：
+- `web`: `http://localhost:3000`
+- `api`: `http://localhost:3002`
+
 ## Local Infra (optional)
 若要本機啟動 Postgres + Redis：
 ```bash
@@ -55,6 +59,17 @@ npm run notion:bootstrap --workspace @hotel/api
    - `NOTION_ACTIVITIES_DB_ID`
    - `NOTION_POLICIES_DB_ID`
    - `NOTION_BOOKINGS_DB_ID`
+
+## Notion Demo Seed Data
+當你已完成 Notion DB 綁定後，可一鍵建立展示資料（含房型圖片）：
+```bash
+npm run notion:seed-demo --workspace @hotel/api
+```
+
+預設會先清空既有資料再重建。若要保留既有資料再新增，使用：
+```bash
+NOTION_SEED_CLEAR=0 npm run notion:seed-demo --workspace @hotel/api
+```
 
 ## Notion-backed API Endpoints
 - `GET /api/site/content` - return rooms/activities/policies from Notion (60s cache, `?refresh=1` to bypass)

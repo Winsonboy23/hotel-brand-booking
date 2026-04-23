@@ -5,7 +5,7 @@ const { formatTwd } = useCurrency()
 const { rooms, activities } = useSiteContent()
 const carouselIndex = ref(0)
 
-const activeRoom = computed(() => rooms[carouselIndex.value])
+const activeRoom = computed(() => rooms.value[carouselIndex.value])
 
 const prevRoom = () => {
   carouselIndex.value = (carouselIndex.value - 1 + rooms.value.length) % rooms.value.length
