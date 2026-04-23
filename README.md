@@ -62,3 +62,18 @@ npm run notion:bootstrap --workspace @hotel/api
 - `GET /api/bookings/me?lineUserId=...` - query bookings by bound LINE user id
 - `GET /api/auth/line/login-url?redirectUri=...` - get LINE Login URL
 - `GET /api/auth/line/callback` - LINE OAuth callback (redirects back to frontend with line user info)
+- `POST /api/jobs/sync-booking-status` - sync booking status changes from Notion and send email notifications
+
+## Google Integration (Email + Calendar)
+Required envs:
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_CALLBACK_URL`
+- `GOOGLE_REFRESH_TOKEN`
+- `GOOGLE_GMAIL_SENDER`
+- `GOOGLE_CALENDAR_ID`
+- `GOOGLE_ADMIN_NOTIFY_EMAIL` (optional)
+
+Behavior:
+- On booking creation, system sends Gmail notifications and inserts a Google Calendar event.
+- `sync-booking-status` job detects status transitions (e.g. `pending_remittance -> remitted`) and sends update emails.

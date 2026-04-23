@@ -63,6 +63,7 @@ export type BookingRecord = {
   paymentMethod: string
   remittanceNote: string
   createdAt: string
+  lastEditedAt: string
 }
 
 export type NotionDatabaseIds = {

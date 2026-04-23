@@ -100,7 +100,8 @@ const toBooking = (page: any): BookingRecord => {
     lineUserId: extractText(props['Line User ID']),
     paymentMethod: props['Payment Method']?.select?.name ?? '',
     remittanceNote: extractText(props['Remittance Note']),
-    createdAt: extractDate(props['Created At'])
+    createdAt: extractDate(props['Created At']),
+    lastEditedAt: typeof page.last_edited_time === 'string' ? page.last_edited_time : ''
   }
 }
 
@@ -179,6 +180,16 @@ export class NotionRepository {
         rich_text: { contains: lineUserId }
       },
       sorts: [{ property: 'Created At', direction: 'descending' }]
+    })
+
+    return response.results.map(toBooking)
+  }
+
+  async listBookingsForStatusSync(limit = 100): Promise<BookingRecord[]> {
+    const response = await this.notion.databases.query({
+      database_id: this.db.bookingsDbId,
+      sorts: [{ timestamp: 'last_edited_time', direction: 'descending' }],
+      page_size: limit
     })
 
     return response.results.map(toBooking)

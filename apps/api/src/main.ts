@@ -5,7 +5,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { NotionRepository } from './repositories/notion/notionRepository.js'
-import type { NotionDatabaseIds } from './repositories/notion/types.js'
+import type { BookingRecord, NotionDatabaseIds } from './repositories/notion/types.js'
+import { GoogleWorkspaceService } from './integrations/googleWorkspace.js'
 
 const app = Fastify({ logger: true })
 
@@ -26,6 +27,16 @@ const lineEnvSchema = z.object({
   LINE_CHANNEL_ID: z.string().min(1),
   LINE_CHANNEL_SECRET: z.string().min(1),
   LINE_CALLBACK_URL: z.string().url()
+})
+
+const googleEnvSchema = z.object({
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().min(1),
+  GOOGLE_CALLBACK_URL: z.string().url(),
+  GOOGLE_REFRESH_TOKEN: z.string().min(1),
+  GOOGLE_GMAIL_SENDER: z.string().email(),
+  GOOGLE_CALENDAR_ID: z.string().min(1),
+  GOOGLE_ADMIN_NOTIFY_EMAIL: z.string().email().optional()
 })
 
 const promotionSchema = z.object({
@@ -57,6 +68,7 @@ const dir = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(dir, '..', 'data')
 const promotionsFile = join(dataDir, 'promotions.json')
 const remittancesFile = join(dataDir, 'remittances.json')
+const bookingStatusCacheFile = join(dataDir, 'booking-status-cache.json')
 
 const notionConfig = notionEnvSchema.safeParse(process.env)
 const notionRepository = notionConfig.success
@@ -70,6 +82,19 @@ const notionRepository = notionConfig.success
 
 const lineConfig = lineEnvSchema.safeParse(process.env)
 const lineLoginStateStore = new Map<string, { redirectUri: string; createdAt: number }>()
+
+const googleConfig = googleEnvSchema.safeParse(process.env)
+const googleWorkspaceService = googleConfig.success
+  ? new GoogleWorkspaceService({
+      clientId: googleConfig.data.GOOGLE_CLIENT_ID,
+      clientSecret: googleConfig.data.GOOGLE_CLIENT_SECRET,
+      redirectUri: googleConfig.data.GOOGLE_CALLBACK_URL,
+      refreshToken: googleConfig.data.GOOGLE_REFRESH_TOKEN,
+      sender: googleConfig.data.GOOGLE_GMAIL_SENDER,
+      calendarId: googleConfig.data.GOOGLE_CALENDAR_ID,
+      adminNotifyEmail: googleConfig.data.GOOGLE_ADMIN_NOTIFY_EMAIL
+    })
+  : null
 
 const seedPromotions: Promotion[] = [
   {
@@ -100,6 +125,12 @@ const ensureDataFiles = async () => {
   } catch {
     await writeFile(remittancesFile, JSON.stringify([], null, 2), 'utf8')
   }
+
+  try {
+    await readFile(bookingStatusCacheFile, 'utf8')
+  } catch {
+    await writeFile(bookingStatusCacheFile, JSON.stringify({}, null, 2), 'utf8')
+  }
 }
 
 const readPromotions = async (): Promise<Promotion[]> => {
@@ -122,6 +153,22 @@ const writeRemittances = async (rows: Remittance[]) => {
   await writeFile(remittancesFile, JSON.stringify(rows, null, 2), 'utf8')
 }
 
+type BookingStatusCache = Record<string, { status: BookingRecord['status']; lastEditedAt: string }>
+
+const readBookingStatusCache = async (): Promise<BookingStatusCache> => {
+  try {
+    const raw = await readFile(bookingStatusCacheFile, 'utf8')
+    const parsed = z.record(z.object({ status: z.string(), lastEditedAt: z.string() })).safeParse(JSON.parse(raw))
+    return parsed.success ? (parsed.data as BookingStatusCache) : {}
+  } catch {
+    return {}
+  }
+}
+
+const writeBookingStatusCache = async (cache: BookingStatusCache) => {
+  await writeFile(bookingStatusCacheFile, JSON.stringify(cache, null, 2), 'utf8')
+}
+
 const today = () => new Date().toISOString().slice(0, 10)
 const inRange = (value: string, from: string, to: string) => value >= from && value <= to
 
@@ -142,7 +189,21 @@ const requireLineConfig = (reply: any) => {
   return null
 }
 
-app.get('/health', async () => ({ ok: true, notionConfigured: Boolean(notionRepository) }))
+const requireGoogleWorkspaceService = (reply: any) => {
+  if (googleWorkspaceService) return googleWorkspaceService
+  reply.code(500).send({
+    message:
+      'Google Workspace service is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, GOOGLE_GMAIL_SENDER and GOOGLE_CALENDAR_ID.'
+  })
+  return null
+}
+
+app.get('/health', async () => ({
+  ok: true,
+  notionConfigured: Boolean(notionRepository),
+  lineConfigured: lineConfig.success,
+  googleConfigured: googleConfig.success
+}))
 
 app.get('/api/auth/line/login-url', async (request, reply) => {
   const line = requireLineConfig(reply)
@@ -276,6 +337,19 @@ app.post('/api/bookings', async (request, reply) => {
   }
 
   const booking = await repo.createBooking(parsed.data)
+
+  const cache = await readBookingStatusCache()
+  cache[booking.id] = { status: booking.status, lastEditedAt: booking.lastEditedAt }
+  await writeBookingStatusCache(cache)
+
+  if (googleWorkspaceService) {
+    try {
+      await googleWorkspaceService.notifyBookingCreated(booking)
+    } catch (error) {
+      request.log.error({ error, bookingId: booking.id }, 'failed to send booking created notifications')
+    }
+  }
+
   return reply.code(201).send({ status: 'submitted', data: booking })
 })
 
@@ -290,6 +364,51 @@ app.get('/api/bookings/me', async (request, reply) => {
 
   const rows = await repo.getBookingsByLineUserId(query.data.lineUserId)
   return rows
+})
+
+app.post('/api/jobs/sync-booking-status', async (request, reply) => {
+  const repo = requireNotionRepository(reply)
+  if (!repo) return
+  const googleService = requireGoogleWorkspaceService(reply)
+  if (!googleService) return
+
+  const expectedToken = process.env.JOB_SYNC_TOKEN?.trim()
+  if (expectedToken) {
+    const provided = (request.headers['x-job-token'] ?? '').toString()
+    if (provided !== expectedToken) {
+      return reply.code(401).send({ message: 'Unauthorized job token' })
+    }
+  }
+
+  const bookings = await repo.listBookingsForStatusSync(100)
+  const cache = await readBookingStatusCache()
+  let changed = 0
+
+  for (const booking of bookings) {
+    const previous = cache[booking.id]
+
+    if (!previous) {
+      cache[booking.id] = { status: booking.status, lastEditedAt: booking.lastEditedAt }
+      continue
+    }
+
+    if (previous.status !== booking.status && ['remitted', 'confirmed', 'cancelled'].includes(booking.status)) {
+      try {
+        await googleService.notifyBookingStatusChanged(booking, previous.status)
+        changed += 1
+      } catch (error) {
+        request.log.error(
+          { error, bookingId: booking.id, from: previous.status, to: booking.status },
+          'failed to send status changed notification'
+        )
+      }
+    }
+
+    cache[booking.id] = { status: booking.status, lastEditedAt: booking.lastEditedAt }
+  }
+
+  await writeBookingStatusCache(cache)
+  return { synced: bookings.length, changed }
 })
 
 app.get('/api/promotions/recent', async () => {
