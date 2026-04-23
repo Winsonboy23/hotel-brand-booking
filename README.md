@@ -92,3 +92,8 @@ Required envs:
 Behavior:
 - On booking creation, system sends Gmail notifications and inserts a Google Calendar event.
 - `sync-booking-status` job detects status transitions (e.g. `pending_remittance -> remitted`) and sends update emails.
+
+可選：先建立專用 Google Calendar，再把輸出的 `calendarId` 寫入 `GOOGLE_CALENDAR_ID`：
+```bash
+npm run google:bootstrap-calendar --workspace @hotel/api
+```

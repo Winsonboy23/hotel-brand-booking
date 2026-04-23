@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "echo \"No lint configured yet\"",
     "notion:bootstrap": "node --loader ts-node/esm src/scripts/bootstrapNotion.ts",
-    "notion:seed-demo": "node --loader ts-node/esm src/scripts/seedNotionDemo.ts"
+    "notion:seed-demo": "node --loader ts-node/esm src/scripts/seedNotionDemo.ts",
+    "google:bootstrap-calendar": "node --loader ts-node/esm src/scripts/bootstrapGoogleCalendar.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
